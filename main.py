@@ -3,7 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
-
+from sklearn.linear_model import Lasso
+from sklearn.feature_selection import SelectFromModel
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
+from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import RFE
+from sklearn.metrics import r2_score, mean_squared_error
 
 
 train_data=pd.read_csv('train.csv')
@@ -59,18 +65,70 @@ test_data_scaled=scaler.fit_transform(test_data)
 train_data_scaled_df=pd.DataFrame(train_data_scaled,columns=train_data.columns)
 test_data_scaled_df=pd.DataFrame(test_data_scaled,columns=test_data.columns)
 
-X=train_data_scaled_df.drop('SalePrice',axis=1)
-Y=train_data_scaled_df['SalePrice']
+X=train_data_scaled_df.drop(['SalePrice','Id'],axis=1)
+Y=train_data['SalePrice']
 
-corrs=train_data.corr()['SalePrice'].abs().sort_values(ascending=False)
-high_corrs=corrs[0:10].index
 
-for corr in high_corrs:
-    plt.scatter(x=train_data_scaled_df[corr],y=train_data_scaled_df['SalePrice'])
-    plt.xlabel(corr)
-    plt.ylabel('saleprice')
 
-plt.show()
+#### Feature selection with coorelation method 
+# This is the performance
+# R² Score: 0.6898455416778145
+# MSE: 1570711805.6632442
+# RMSE: 39632.206671635686
+
+# corrs=train_data.corr()['SalePrice'].abs().sort_values(ascending=False)
+# high_corrs=corrs[1:11].index
+
+# X_corr=X[high_corrs]
+
+# x_train,x_test,y_train,y_test=train_test_split(X_corr,Y,test_size=0.2, random_state=42)
+
+# lr=LinearRegression()
+# lr.fit(x_train,y_train)
+
+# y_predict=lr.predict(x_test)
+
+# r2=r2_score(y_predict,y_test)
+# mse=mean_squared_error(y_predict,y_test)
+# rmse=mse**(0.5)
+
+# print("R² Score:", r2)
+# print("MSE:", mse)
+# print("RMSE:", rmse)
+
+
+
+####Feature selection with help of Wrapper method
+# R² Score: 0.8443194815202413
+# MSE: 1003403269.2946824
+# RMSE: 31676.5413089037
+
+# model=Lasso(alpha=0.1,max_iter=100000)
+# rfe=RFE(model,n_features_to_select=20)
+# rfe.fit(X,Y)
+
+# selected_features=X.columns[rfe.support_]
+# X_rfe=X[selected_features]
+
+# x_train,x_test,y_train,y_test=train_test_split(X_rfe,Y,test_size=0.2, random_state=42)
+
+# ridge=Ridge(alpha=0.1)
+# ridge.fit(X_rfe,Y)
+
+# y_predict=ridge.predict(x_test)
+
+# r2=r2_score(y_predict,y_test)
+# mse=mean_squared_error(y_predict,y_test)
+# rmse=mse**(0.5)
+
+# print("R² Score:", r2)
+# print("MSE:", mse)
+# print("RMSE:", rmse)
+
+
+
+
+
 
 
 
