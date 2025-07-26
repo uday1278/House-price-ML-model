@@ -73,7 +73,7 @@ for corr in high_corrs:
 plt.show()
 
 
-plt.show()
+
 
 
 
