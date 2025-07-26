@@ -66,10 +66,11 @@ corrs=train_data.corr()['SalePrice'].abs().sort_values(ascending=False)
 high_corrs=corrs[0:10].index
 
 for corr in high_corrs:
-    plt.scatter(x=corr,y='SalePrice')
+    plt.scatter(x=train_data_scaled_df[corr],y=train_data_scaled_df['SalePrice'])
     plt.xlabel(corr)
+    plt.ylabel('saleprice')
 
-plt.show
+plt.show()
 
 
 
