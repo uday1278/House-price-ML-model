@@ -10,7 +10,7 @@ from sklearn.linear_model import Ridge
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import RFE
 from sklearn.metrics import r2_score, mean_squared_error
-
+from sklearn.linear_model import LassoCV
 
 train_data=pd.read_csv('train.csv')
 test_data=pd.read_csv('test.csv')
@@ -60,13 +60,14 @@ for cols in train_data.columns:
 scaler=StandardScaler()
 
 train_data_scaled=scaler.fit_transform(train_data)
-test_data_scaled=scaler.fit_transform(test_data)
+test_data_scaled=scaler.transform(test_data)
 
 train_data_scaled_df=pd.DataFrame(train_data_scaled,columns=train_data.columns)
 test_data_scaled_df=pd.DataFrame(test_data_scaled,columns=test_data.columns)
 
 X=train_data_scaled_df.drop(['SalePrice','Id'],axis=1)
-Y=train_data['SalePrice']
+Y = np.log1p(train_data['SalePrice'])
+
 
 
 
@@ -98,7 +99,13 @@ Y=train_data['SalePrice']
 
 
 
-####Feature selection with help of Wrapper method
+
+
+
+
+####  Feature selection with help of Wrapper method
+
+# This is the performance
 # R² Score: 0.8443194815202413
 # MSE: 1003403269.2946824
 # RMSE: 31676.5413089037
@@ -124,6 +131,53 @@ Y=train_data['SalePrice']
 # print("R² Score:", r2)
 # print("MSE:", mse)
 # print("RMSE:", rmse)
+
+
+
+
+
+### Feature selection with lasso embedded function
+
+# Performance 
+
+# no of selected features= 83
+# R² Score: 0.8957440004956234
+# MSE: 0.014980904154825852
+# RMSE: 0.12239650385050159
+
+X_train, X_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_state=42)
+lasso=Lasso(alpha=0.005)
+lasso.fit(X_train,y_train)
+
+selected_features=X.columns[lasso.coef_!=0]
+print('no of selected features=',len(list(selected_features)))
+
+X_train_selected=X[selected_features]
+
+X_train_1, X_test_1, y_train_1, y_test_1 = train_test_split(X_train_selected, Y, test_size=0.2, random_state=41)
+ridge=Ridge(alpha=0.1)
+ridge.fit(X_train_1,y_train_1)
+
+y_predict=ridge.predict(X_test_1)
+
+r2=r2_score(y_test_1,y_predict)
+mse=mean_squared_error(y_test_1,y_predict)
+rmse=mse**(0.5)
+
+print("R² Score:", r2)
+print("MSE:", mse)
+print("RMSE:", rmse)
+
+test_data_scaled_df_pred = test_data_scaled_df.reindex(columns=selected_features, fill_value=0)
+
+predictions=np.expm1(ridge.predict(test_data_scaled_df_pred))
+
+submission=pd.DataFrame({'Id':test_data['Id'],'SalePrice':predictions})
+
+submission.to_csv('submission.csv', index=False)
+
+
+
 
 
 
